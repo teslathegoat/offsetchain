@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OffsetChain - Blockchain Carbon Offset Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+        
+        .green-gradient {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+        
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .blockchain-line {
+            position: relative;
+        }
+        
+        .blockchain-line::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #10b981, transparent);
+            z-index: -1;
+        }
+        
+        .glow {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+        }
+        
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #10b981;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+        
+        .nav-link:hover,
+        .nav-link.active {
+            color: #10b981;
+        }
+        
+        .btn-primary {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn-primary:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-secondary {
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background-color: rgba(16, 185, 129, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .project-card {
+            transition: all 0.3s ease;
+        }
+        
+        .project-card:hover .project-overlay {
+            opacity: 1;
+        }
+        
+        .project-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(16, 185, 129, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .token-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .token-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+            transition: color 0.3s ease;
+        }
+        
+        .close-modal:hover {
+            color: #1f2937;
+        }
+        
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.98);
+            z-index: 999;
+            padding: 5rem 2rem;
+        }
+        
+        .mobile-menu.active {
+            display: block;
+        }
+        
+        .mobile-menu-link {
+            display: block;
+            padding: 1rem 0;
+            color: white;
+            font-size: 1.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: color 0.3s ease;
+        }
+        
+        .mobile-menu-link:hover {
+            color: #10b981;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            cursor: pointer;
+        }
+        
+        .transaction-item {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .transaction-item:hover {
+            background: rgba(16, 185, 129, 0.05);
+            transform: translateX(5px);
+        }
+        
+        .impact-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .impact-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .partner-logo {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            opacity: 0.6;
+        }
+        
+        .partner-logo:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        
+        .social-link {
+            transition: all 0.3s ease;
+        }
+        
+        .social-link:hover {
+            transform: translateY(-3px);
+            color: #10b981;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- Navigation -->
+    <nav class="fixed w-full bg-white/90 backdrop-blur-sm z-50 shadow-sm">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2 cursor-pointer" onclick="scrollToTop()">
+                <div class="w-10 h-10 rounded-full green-gradient flex items-center justify-center">
+                    <i class="fas fa-leaf text-white"></i>
+                </div>
+                <span class="text-xl font-bold">OffsetChain</span>
+            </div>
+            
+            <div class="hidden md:flex space-x-8">
+                <a href="#projects" class="nav-link">Projects</a>
+                <a href="#blockchain" class="nav-link">Blockchain</a>
+                <a href="#impact" class="nav-link">Impact</a>
+                <a href="#rewards" class="nav-link">Rewards</a>
+                <a href="#about" class="nav-link">About</a>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button class="hidden md:block px-4 py-2 rounded-lg border border-emerald-600 text-emerald-600 hover:bg-emerald-50 transition btn-secondary" onclick="openWalletModal()">
+                    Connect Wallet
+                </button>
+                <button class="px-4 py-2 rounded-lg green-gradient text-white hover:opacity-90 transition btn-primary" onclick="scrollToSection('projects')">
+                    Get Started
+                </button>
+                <button class="md:hidden text-gray-600" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu">
+        <button class="absolute top-4 right-4 text-white text-2xl" onclick="toggleMobileMenu()">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="max-w-md mx-auto">
+            <a href="#projects" class="mobile-menu-link" onclick="toggleMobileMenu(); scrollToSection('projects')">Projects</a>
+            <a href="#blockchain" class="mobile-menu-link" onclick="toggleMobileMenu(); scrollToSection('blockchain')">Blockchain</a>
+            <a href="#impact" class="mobile-menu-link" onclick="toggleMobileMenu(); scrollToSection('impact')">Impact</a>
+            <a href="#rewards" class="mobile-menu-link" onclick="toggleMobileMenu(); scrollToSection('rewards')">Rewards</a>
+            <a href="#about" class="mobile-menu-link" onclick="toggleMobileMenu(); scrollToSection('about')">About</a>
+            <button class="w-full mt-8 px-4 py-3 rounded-lg border border-emerald-600 text-emerald-600 hover:bg-emerald-50 transition" onclick="openWalletModal(); toggleMobileMenu()">
+                Connect Wallet
+            </button>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="pt-24 pb-16 gradient-bg text-white">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                        Offset Carbon with <span class="text-emerald-400">Blockchain</span> Transparency
+                    </h1>
+                    <p class="text-lg text-gray-300 mb-8">
+                        Track your environmental impact in real-time. Support verified carbon offset projects powered by blockchain technology.
+                    </p>
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                        <button class="px-6 py-3 rounded-lg green-gradient text-white font-medium hover:opacity-90 transition btn-primary" onclick="scrollToSection('projects')">
+                            Explore Projects
+                        </button>
+                        <button class="px-6 py-3 rounded-lg bg-transparent border border-white text-white font-medium hover:bg-white/10 transition btn-secondary" onclick="openDemoModal()">
+                            View Demo
+                        </button>
+                    </div>
+                    
+                    <div class="mt-10 flex items-center space-x-6">
+                        <div class="cursor-pointer" onclick="scrollToSection('impact')">
+                            <div class="text-2xl font-bold">2.4M+</div>
+                            <div class="text-sm text-gray-400">Tons CO₂ Offset</div>
+                        </div>
+                        <div class="cursor-pointer" onclick="scrollToSection('projects')">
+                            <div class="text-2xl font-bold">150+</div>
+                            <div class="text-sm text-gray-400">Active Projects</div>
+                        </div>
+                        <div class="cursor-pointer" onclick="scrollToSection('rewards')">
+                            <div class="text-2xl font-bold">98K+</div>
+                            <div class="text-sm text-gray-400">Community Members</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="md:w-1/2 flex justify-center">
+                    <div class="relative cursor-pointer" onclick="scrollToSection('impact')">
+                        <div class="w-80 h-80 rounded-full green-gradient opacity-20 absolute -top-6 -left-6"></div>
+                        <div class="w-80 h-80 rounded-full border-4 border-emerald-500/30 relative z-10 flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="text-5xl font-bold mb-2">24,872</div>
+                                <div class="text-lg">Tons CO₂ Offset Today</div>
+                                <div class="mt-4 inline-block px-4 py-1 bg-emerald-500/20 rounded-full text-sm">
+                                    <i class="fas fa-arrow-up mr-1"></i> 12% from yesterday
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute -bottom-4 -right-4 bg-white text-gray-800 rounded-lg p-4 shadow-lg floating">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 rounded-full bg-emerald-500 pulse-animation"></div>
+                                <span class="text-sm font-medium">Live Tracking</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Real-time Projects Section -->
+    <section id="projects" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Live Carbon Offset Projects</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    Explore our verified projects making a real environmental impact. Each project is tracked transparently on the blockchain.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Project Card 1 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover border border-gray-100 relative" onclick="openProjectModal('amazon')">
+                    <div class="h-48 bg-cover bg-center relative" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                        <div class="project-overlay">
+                            <div class="text-center text-white">
+                                <i class="fas fa-search-plus text-3xl mb-2"></i>
+                                <p>View Details</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-xl font-bold">Amazon Rainforest Protection</h3>
+                            <span class="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs rounded-full">Active</span>
+                        </div>
+                        <p class="text-gray-600 mb-4">Protecting 50,000 hectares of Amazon rainforest through sustainable land management.</p>
+                        
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Progress</span>
+                                <span>68%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-emerald-600 h-2 rounded-full" style="width: 68%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between text-sm">
+                            <div>
+                                <div class="text-gray-500">Offset Goal</div>
+                                <div class="font-medium">120,000 tons</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-500">Offset So Far</div>
+                                <div class="font-medium">81,600 tons</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-500">Price/ton</div>
+                                <div class="font-medium">$15.80</div>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full mt-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition btn-primary" onclick="event.stopPropagation(); openContributeModal('amazon')">
+                            Contribute Now
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Project Card 2 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover border border-gray-100 relative" onclick="openProjectModal('wind')">
+                    <div class="h-48 bg-cover bg-center relative" style="background-image: url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                        <div class="project-overlay">
+                            <div class="text-center text-white">
+                                <i class="fas fa-search-plus text-3xl mb-2"></i>
+                                <p>View Details</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-xl font-bold">Wind Energy Initiative</h3>
+                            <span class="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs rounded-full">Active</span>
+                        </div>
+                        <p class="text-gray-600 mb-4">Building wind farms in rural communities to replace fossil fuel energy sources.</p>
+                        
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Progress</span>
+                                <span>42%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-emerald-600 h-2 rounded-full" style="width: 42%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between text-sm">
+                            <div>
+                                <div class="text-gray-500">Offset Goal</div>
+                                <div class="font-medium">85,000 tons</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-500">Offset So Far</div>
+                                <div class="font-medium">35,700 tons</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-500">Price/ton</div>
+                                <div class="font-medium">$12.40</div>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full mt-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition btn-primary" onclick="event.stopPropagation(); openContributeModal('wind')">
+                            Contribute Now
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Project Card 3 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover border border-gray-100 relative" onclick="openProjectModal('ocean')">
+                    <div class="h-48 bg-cover bg-center relative" style="background-image: url('https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                        <div class="project-overlay">
+                            <div class="text-center text-white">
+                                <i class="fas fa-search-plus text-3xl mb-2"></i>
+                                <p>View Details</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-xl font-bold">Ocean Reforestation</h3>
+                            <span class="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-full">Funding</span>
+                        </div>
+                        <p class="text-gray-600 mb-4">Restoring marine ecosystems through kelp forest regeneration projects.</p>
+                        
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Progress</span>
+                                <span>18%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-emerald-600 h-2 rounded-full" style="width: 18%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between text-sm">
+                            <div>
+                                <div class="text-gray-500">Offset Goal</div>
+                                <div class="font-medium">65,000 tons</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-500">Offset So Far</div>
+                                <div class="font-medium">11,700 tons</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-500">Price/ton</div>
+                                <div class="font-medium">$18.20</div>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full mt-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition btn-primary" onclick="event.stopPropagation(); openContributeModal('ocean')">
+                            Contribute Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-10">
+                <button class="px-6 py-3 rounded-lg border border-emerald-600 text-emerald-600 hover:bg-emerald-50 transition btn-secondary" onclick="openAllProjectsModal()">
+                    View All Projects
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blockchain Tracking Section -->
+    <section id="blockchain" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <h2 class="text-3xl font-bold mb-4">Transparent Blockchain Tracking</h2>
+                    <p class="text-gray-600 mb-6">
+                        Every carbon offset is recorded on an immutable blockchain, ensuring complete transparency and traceability from contribution to impact.
+                    </p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-start cursor-pointer hover:bg-gray-100 p-3 rounded-lg transition" onclick="openInfoModal('immutable')">
+                            <div class="mt-1 w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-check text-emerald-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="font-bold">Immutable Records</h3>
+                                <p class="text-gray-600">All transactions are permanently recorded and cannot be altered.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start cursor-pointer hover:bg-gray-100 p-3 rounded-lg transition" onclick="openInfoModal('verification')">
+                            <div class="mt-1 w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-check text-emerald-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="font-bold">Real-time Verification</h3>
+                                <p class="text-gray-600">Track your contributions and their environmental impact in real-time.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start cursor-pointer hover:bg-gray-100 p-3 rounded-lg transition" onclick="openInfoModal('traceability')">
+                            <div class="mt-1 w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-check text-emerald-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="font-bold">Full Traceability</h3>
+                                <p class="text-gray-600">Follow your offset from contribution to project implementation.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 p-4 bg-white rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition" onclick="openTransactionModal()">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm text-gray-500">Latest Transaction</span>
+                            <span class="text-xs text-emerald-600 font-medium">Verified</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                                <i class="fas fa-user text-emerald-600"></i>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-medium">0x742d35Cc6634C0532925a3b844Bc9e7595f8e4E0</div>
+                                <div class="text-sm text-gray-500">Offset: 12.5 tons CO₂</div>
+                            </div>
+                            <div class="ml-auto text-sm text-gray-500">2 min ago</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="md:w-1/2 md:pl-12">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h3 class="text-xl font-bold mb-4">Your Contribution History</h3>
+                        
+                        <div class="blockchain-line py-4">
+                            <div class="transaction-item p-3 rounded-lg" onclick="openTransactionDetailModal('amazon')">
+                                <div class="flex items-center mb-6">
+                                    <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center z-10">
+                                        <i class="fas fa-leaf text-emerald-600"></i>
+                                    </div>
+                                    <div class="ml-4 bg-white p-3 rounded-lg shadow-sm flex-1">
+                                        <div class="font-medium">Amazon Rainforest Protection</div>
+                                        <div class="text-sm text-gray-500">25 tons CO₂ • $395.00 • Today</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="transaction-item p-3 rounded-lg" onclick="openTransactionDetailModal('wind')">
+                                <div class="flex items-center mb-6">
+                                    <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center z-10">
+                                        <i class="fas fa-wind text-emerald-600"></i>
+                                    </div>
+                                    <div class="ml-4 bg-white p-3 rounded-lg shadow-sm flex-1">
+                                        <div class="font-medium">Wind Energy Initiative</div>
+                                        <div class="text-sm text-gray-500">15 tons CO₂ • $186.00 • 3 days ago</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="transaction-item p-3 rounded-lg" onclick="openTransactionDetailModal('ocean')">
+                                <div class="flex items-center mb-6">
+                                    <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center z-10">
+                                        <i class="fas fa-water text-emerald-600"></i>
+                                    </div>
+                                    <div class="ml-4 bg-white p-3 rounded-lg shadow-sm flex-1">
+                                        <div class="font-medium">Ocean Reforestation</div>
+                                        <div class="text-sm text-gray-500">10 tons CO₂ • $182.00 • 1 week ago</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 text-center">
+                            <button class="text-emerald-600 hover:text-emerald-700 font-medium transition" onclick="openFullHistoryModal()">
+                                View Full Transaction History <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Environmental Impact Section -->
+    <section id="impact" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Environmental Impact Dashboard</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    Real-time visualization of our collective environmental impact and progress toward sustainability goals.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-gray-50 rounded-xl p-6 cursor-pointer hover:shadow-lg transition" onclick="openChartModal('offset')">
+                    <h3 class="text-xl font-bold mb-4">CO₂ Offset Over Time</h3>
+                    <div class="h-80">
+                        <canvas id="offsetChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-xl p-6 cursor-pointer hover:shadow-lg transition" onclick="openChartModal('project')">
+                    <h3 class="text-xl font-bold mb-4">Impact by Project Type</h3>
+                    <div class="h-80">
+                        <canvas id="projectChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-6 text-center impact-card" onclick="openImpactModal('co2')">
+                    <div class="text-4xl font-bold text-emerald-800 mb-2">2.4M+</div>
+                    <div class="text-emerald-700">Tons of CO₂ Offset</div>
+                    <div class="mt-4 text-sm text-emerald-600">
+                        Equivalent to taking 520,000 cars off the road for a year
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 text-center impact-card" onclick="openImpactModal('projects')">
+                    <div class="text-4xl font-bold text-blue-800 mb-2">150+</div>
+                    <div class="text-blue-700">Active Projects</div>
+                    <div class="mt-4 text-sm text-blue-600">
+                        Across 32 countries, supporting local communities
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-6 text-center impact-card" onclick="openImpactModal('investment')">
+                    <div class="text-4xl font-bold text-amber-800 mb-2">$42M</div>
+                    <div class="text-amber-700">Total Investment</div>
+                    <div class="mt-4 text-sm text-amber-600">
+                        Directly funding sustainable initiatives worldwide
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Token Rewards Section -->
+    <section id="rewards" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <div class="bg-white rounded-xl shadow-lg p-8 max-w-md mx-auto token-card" onclick="openTokenModal()">
+                        <div class="text-center mb-6">
+                            <div class="w-20 h-20 rounded-full green-gradient flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-coins text-white text-3xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-2">OffsetChain Tokens</h3>
+                            <p class="text-gray-600">Earn rewards for your environmental contributions</p>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition" onclick="event.stopPropagation(); openTokenBalanceModal()">
+                                <div>
+                                    <div class="font-medium">Your Balance</div>
+                                    <div class="text-sm text-gray-500">OCT Tokens</div>
+                                </div>
+                                <div class="text-xl font-bold">1,250</div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition" onclick="event.stopPropagation(); openEarningsModal()">
+                                <div>
+                                    <div class="font-medium">Earned This Month</div>
+                                    <div class="text-sm text-gray-500">From contributions</div>
+                                </div>
+                                <div class="text-xl font-bold text-emerald-600">+320</div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition" onclick="event.stopPropagation(); openTokenValueModal()">
+                                <div>
+                                    <div class="font-medium">Token Value</div>
+                                    <div class="text-sm text-gray-500">Current market price</div>
+                                </div>
+                                <div class="text-xl font-bold">$2.45</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <button class="w-full py-3 rounded-lg green-gradient text-white font-medium hover:opacity-90 transition btn-primary" onclick="event.stopPropagation(); claimTokens()">
+                                Claim Rewards
+                            </button>
+                        </div>
+                        
+                        <div class="mt-4 text-center">
+                            <a href="#" class="text-emerald-600 hover:text-emerald-700 text-sm transition" onclick="event.stopPropagation(); openTokenUtilityModal()">
+                                Learn about token utility <i class="fas fa-arrow-right ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="md:w-1/2 md:pl-12">
+                    <h2 class="text-3xl font-bold mb-4">Tokenized Reward System</h2>
+                    <p class="text-gray-600 mb-6">
+                        Earn OffsetChain Tokens (OCT) for every contribution you make. Our blockchain-based reward system ensures transparent and immediate distribution of tokens.
+                    </p>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-start cursor-pointer hover:bg-gray-100 p-3 rounded-lg transition" onclick="openRewardInfoModal('earn')">
+                            <div class="mt-1 w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-gift text-emerald-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="font-bold">Earn Tokens</h3>
+                                <p class="text-gray-600">Receive OCT tokens for every ton of CO₂ you offset through our platform.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start cursor-pointer hover:bg-gray-100 p-3 rounded-lg transition" onclick="openRewardInfoModal('trade')">
+                            <div class="mt-1 w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-exchange-alt text-emerald-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="font-bold">Trade or Stake</h3>
+                                <p class="text-gray-600">Trade your tokens on supported exchanges or stake them to earn additional rewards.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start cursor-pointer hover:bg-gray-100 p-3 rounded-lg transition" onclick="openRewardInfoModal('support')">
+                            <div class="mt-1 w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-hand-holding-heart text-emerald-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="font-bold">Support More Projects</h3>
+                                <p class="text-gray-600">Use your tokens to fund new environmental initiatives and multiply your impact.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 p-4 bg-emerald-50 rounded-lg border border-emerald-200 cursor-pointer hover:shadow-md transition" onclick="openBonusModal()">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-info text-emerald-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="font-bold text-emerald-800">Bonus Reward Program</h4>
+                                <p class="text-emerald-700 text-sm">Earn 2x tokens when you contribute to featured projects this month!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Section -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Trusted by Leading Organizations</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    We partner with corporations, non-profits, and governments to create transparent and effective carbon offset solutions.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
+                <div class="partner-logo text-gray-400 text-2xl font-bold" onclick="openPartnerModal('A')">Company A</div>
+                <div class="partner-logo text-gray-400 text-2xl font-bold" onclick="openPartnerModal('B')">Company B</div>
+                <div class="partner-logo text-gray-400 text-2xl font-bold" onclick="openPartnerModal('C')">Company C</div>
+                <div class="partner-logo text-gray-400 text-2xl font-bold" onclick="openPartnerModal('D')">Company D</div>
+            </div>
+            
+            <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center cursor-pointer hover:transform hover:scale-105 transition" onclick="openTrustModal('verified')">
+                    <div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-shield-alt text-emerald-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Verified Projects</h3>
+                    <p class="text-gray-600">All projects are independently verified to meet international carbon offset standards.</p>
+                </div>
+                
+                <div class="text-center cursor-pointer hover:transform hover:scale-105 transition" onclick="openTrustModal('secure')">
+                    <div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-lock text-emerald-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Secure & Transparent</h3>
+                    <p class="text-gray-600">Blockchain technology ensures your contributions are secure and fully traceable.</p>
+                </div>
+                
+                <div class="text-center cursor-pointer hover:transform hover:scale-105 transition" onclick="openTrustModal('community')">
+                    <div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-users text-emerald-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Community Driven</h3>
+                    <p class="text-gray-600">Join a global community committed to making a positive environmental impact.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 gradient-bg text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-4">Start Your Carbon Offset Journey Today</h2>
+            <p class="text-gray-300 max-w-2xl mx-auto mb-8">
+                Join thousands of individuals and organizations making a real difference for our planet through transparent, blockchain-verified carbon offsets.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <button class="px-8 py-3 rounded-lg green-gradient text-white font-medium hover:opacity-90 transition btn-primary" onclick="openSignupModal()">
+                    Create Account
+                </button>
+                <button class="px-8 py-3 rounded-lg bg-transparent border border-white text-white font-medium hover:bg-white/10 transition btn-secondary" onclick="openLearnMoreModal()">
+                    Learn More
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4 cursor-pointer" onclick="scrollToTop()">
+                        <div class="w-8 h-8 rounded-full green-gradient flex items-center justify-center">
+                            <i class="fas fa-leaf text-white"></i>
+                        </div>
+                        <span class="text-xl font-bold text-white">OffsetChain</span>
+                    </div>
+                    <p class="mb-4">
+                        Blockchain-powered carbon offset platform for a sustainable future.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="social-link" onclick="openSocialModal('twitter')">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="social-link" onclick="openSocialModal('linkedin')">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        <a href="#" class="social-link" onclick="openSocialModal('github')">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="#" class="social-link" onclick="openSocialModal('telegram')">
+                            <i class="fab fa-telegram"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-white font-bold mb-4">Platform</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-white transition" onclick="scrollToSection('projects')">Projects</a></li>
+                        <li><a href="#" class="hover:text-white transition" onclick="scrollToSection('blockchain')">Blockchain</a></li>
+                        <li><a href="#" class="hover:text-white transition" onclick="scrollToSection('rewards')">Token Rewards</a></li>
+                        <li><a href="#" class="hover:text-white transition" onclick="scrollToSection('impact')">Impact Dashboard</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-white font-bold mb-4">Resources</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-white transition" onclick="openResourceModal('docs')">Documentation</a></li>
+                        <li><a href="#" class="hover:text-white transition" onclick="openResourceModal('api')">API</a></li>
+                        <li><a href="#" class="hover:text-white transition" onclick="openResourceModal('blog')">Blog</a></li>
+                        <li><a href="#" class="hover:text-white transition" onclick="openResourceModal('faq')">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-white font-bold mb-4">Company</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-white transition" onclick="openCompanyModal('about')">About Us</a></li>
+                        <li><a href="#" class="hover:text-white transition" onclick="openCompanyModal('careers')">Careers</a></li>
+                        <li><a href="#" class="hover:text-white transition" onclick="openCompanyModal('partners')">Partners</a></li>
+                        <li><a href="#" class="hover:text-white transition" onclick="openCompanyModal('contact')">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-sm text-center">
+                <p>&copy; 2023 OffsetChain. All rights reserved. | <a href="#" class="hover:text-white transition" onclick="openPrivacyModal()">Privacy Policy</a> | <a href="#" class="hover:text-white transition" onclick="openTermsModal()">Terms of Service</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal Templates -->
+    <!-- Wallet Connection Modal -->
+    <div id="walletModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('walletModal')">&times;</span>
+            <h2 class="text-2xl font-bold mb-4">Connect Your Wallet</h2>
+            <p class="text-gray-600 mb-6">Choose your preferred wallet to connect to OffsetChain</p>
+            
+            <div class="space-y-3">
+                <button class="w-full p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition flex items-center justify-between" onclick="connectWallet('metamask')">
+                    <div class="flex items-center">
+                        <i class="fab fa-ethereum text-2xl mr-3"></i>
+                        <span>MetaMask</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </button>
+                
+                <button class="w-full p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition flex items-center justify-between" onclick="connectWallet('coinbase')">
+                    <div class="flex items-center">
+                        <i class="fas fa-wallet text-2xl mr-3"></i>
+                        <span>Coinbase Wallet</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </button>
+                
+                <button class="w-full p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition flex items-center justify-between" onclick="connectWallet('walletconnect')">
+                    <div class="flex items-center">
+                        <i class="fas fa-link text-2xl mr-3"></i>
+                        <span>WalletConnect</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </button>
+            </div>
+            
+            <p class="text-sm text-gray-500 mt-6 text-center">
+                By connecting your wallet, you agree to our <a href="#" class="text-emerald-600 hover:underline" onclick="openTermsModal()">Terms of Service</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Project Detail Modal -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('projectModal')">&times;</span>
+            <div id="projectModalContent">
+                <!-- Content will be dynamically inserted -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Contribute Modal -->
+    <div id="contributeModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('contributeModal')">&times;</span>
+            <h2 class="text-2xl font-bold mb-4">Contribute to Project</h2>
+            <div id="contributeModalContent">
+                <!-- Content will be dynamically inserted -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Token Claim Modal -->
+    <div id="tokenClaimModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('tokenClaimModal')">&times;</span>
+            <h2 class="text-2xl font-bold mb-4">Claim Your Rewards</h2>
+            <div class="text-center mb-6">
+                <div class="text-5xl font-bold text-emerald-600 mb-2">320</div>
+                <p class="text-gray-600">OCT Tokens Available to Claim</p>
+            </div>
+            
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <div class="flex justify-between mb-2">
+                    <span>Token Value</span>
+                    <span class="font-medium">$784.00</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Gas Fee</span>
+                    <span class="font-medium">$5.20</span>
+                </div>
+            </div>
+            
+            <button class="w-full py-3 rounded-lg green-gradient text-white font-medium hover:opacity-90 transition" onclick="confirmClaim()">
+                Confirm Claim
+            </button>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('infoModal')">&times;</span>
+            <div id="infoModalContent">
+                <!-- Content will be dynamically inserted -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // CO2 Offset Over Time Chart
+            const offsetCtx = document.getElementById('offsetChart').getContext('2d');
+            const offsetChart = new Chart(offsetCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Tons of CO₂ Offset',
+                        data: [120000, 135000, 155000, 180000, 210000, 240000, 275000, 310000, 340000, 380000, 420000, 460000],
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y.toLocaleString() + ' tons CO₂';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString();
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    onClick: function(event, elements) {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const month = this.data.labels[index];
+                            const value = this.data.datasets[0].data[index];
+                            openMonthDetailModal(month, value);
+                        }
+                    }
+                }
+            });
+            
+            // Impact by Project Type Chart
+            const projectCtx = document.getElementById('projectChart').getContext('2d');
+            const projectChart = new Chart(projectCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Forestry', 'Renewable Energy', 'Ocean Conservation', 'Agriculture', 'Waste Management'],
+                    datasets: [{
+                        data: [35, 25, 15, 15, 10],
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(14, 165, 233, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(139, 92, 246, 0.8)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    },
+                    onClick: function(event, elements) {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const label = this.data.labels[index];
+                            const value = this.data.datasets[0].data[index];
+                            openProjectTypeModal(label, value);
+                        }
+                    }
+                }
+            });
+            
+            // Update active navigation on scroll
+            window.addEventListener('scroll', function() {
+                const sections = document.querySelectorAll('section[id]');
+                const navLinks = document.querySelectorAll('.nav-link');
+                
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (scrollY >= (sectionTop - 200)) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').slice(1) === current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+        
+        // Navigation Functions
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                window.scrollTo({
+                    top: section.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+        
+        // Mobile Menu
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('active');
+        }
+        
+        // Modal Functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Wallet Modal
+        function openWalletModal() {
+            openModal('walletModal');
+        }
+        
+        function connectWallet(walletType) {
+            closeModal('walletModal');
+            // Simulate wallet connection
+            setTimeout(() => {
+                alert(`${walletType} connected successfully!`);
+            }, 500);
+        }
+        
+        // Project Modals
+        function openProjectModal(projectType) {
+            const modal = document.getElementById('projectModal');
+            const content = document.getElementById('projectModalContent');
+            
+            const projectData = {
+                amazon: {
+                    title: 'Amazon Rainforest Protection',
+                    image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                    description: 'Protecting 50,000 hectares of Amazon rainforest through sustainable land management and community engagement.',
+                    location: 'Brazil, South America',
+                    startDate: 'January 2023',
+                    expectedEnd: 'December 2025',
+                    verification: 'Verra Verified Carbon Standard',
+                    co2PerYear: '40,000 tons',
+                    localImpact: 'Supporting 200+ local families'
+                },
+                wind: {
+                    title: 'Wind Energy Initiative',
+                    image: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                    description: 'Building wind farms in rural communities to replace fossil fuel energy sources and provide clean electricity.',
+                    location: 'India, Asia',
+                    startDate: 'March 2023',
+                    expectedEnd: 'June 2024',
+                    verification: 'Gold Standard',
+                    co2PerYear: '28,000 tons',
+                    localImpact: 'Powering 15,000+ homes'
+                },
+                ocean: {
+                    title: 'Ocean Reforestation',
+                    image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                    description: 'Restoring marine ecosystems through kelp forest regeneration projects and sustainable fishing practices.',
+                    location: 'Philippines, Southeast Asia',
+                    startDate: 'June 2023',
+                    expectedEnd: 'December 2024',
+                    verification: 'Climate Action Reserve',
+                    co2PerYear: '22,000 tons',
+                    localImpact: 'Creating 500+ marine jobs'
+                }
+            };
+            
+            const project = projectData[projectType];
+            
+            content.innerHTML = `
+                <img src="${project.image}" alt="${project.title}" class="w-full h-48 object-cover rounded-lg mb-4">
+                <h2 class="text-2xl font-bold mb-2">${project.title}</h2>
+                <p class="text-gray-600 mb-4">${project.description}</p>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <h4 class="font-semibold text-gray-700">Location</h4>
+                        <p>${project.location}</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-700">Duration</h4>
+                        <p>${project.startDate} - ${project.expectedEnd}</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-700">Verification</h4>
+                        <p>${project.verification}</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-700">Annual CO₂ Reduction</h4>
+                        <p>${project.co2PerYear}</p>
+                    </div>
+                </div>
+                
+                <div class="bg-emerald-50 rounded-lg p-4 mb-4">
+                    <h4 class="font-semibold text-emerald-800 mb-2">Local Impact</h4>
+                    <p class="text-emerald-700">${project.localImpact}</p>
+                </div>
+                
+                <button class="w-full py-3 rounded-lg green-gradient text-white font-medium hover:opacity-90 transition" onclick="openContributeModal('${projectType}')">
+                    Contribute to This Project
+                </button>
+            `;
+            
+            openModal('projectModal');
+        }
+        
+        function openContributeModal(projectType) {
+            closeModal('projectModal');
+            const modal = document.getElementById('contributeModal');
+            const content = document.getElementById('contributeModalContent');
+            
+            const projectPrices = {
+                amazon: 15.80,
+                wind: 12.40,
+                ocean: 18.20
+            };
+            
+            const price = projectPrices[projectType];
+            
+            content.innerHTML = `
+                <h3 class="text-xl font-bold mb-4">Select Contribution Amount</h3>
+                
+                <div class="grid grid-cols-3 gap-3 mb-4">
+                    <button class="p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition" onclick="setContributionAmount(5)">5 tons</button>
+                    <button class="p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition" onclick="setContributionAmount(10)">10 tons</button>
+                    <button class="p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition" onclick="setContributionAmount(25)">25 tons</button>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Custom Amount (tons)</label>
+                    <input type="number" id="customAmount" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter tons" min="1" onchange="updateContributionTotal()">
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <div class="flex justify-between mb-2">
+                        <span>CO₂ Offset</span>
+                        <span id="offsetAmount">0 tons</span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span>Price per ton</span>
+                        <span>$${price.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-lg">
+                        <span>Total</span>
+                        <span id="totalAmount">$0.00</span>
+                    </div>
+                </div>
+                
+                <button class="w-full py-3 rounded-lg green-gradient text-white font-medium hover:opacity-90 transition" onclick="processContribution()">
+                    Proceed to Payment
+                </button>
+            `;
+            
+            openModal('contributeModal');
+        }
+        
+        function setContributionAmount(tons) {
+            document.getElementById('customAmount').value = tons;
+            updateContributionTotal();
+        }
+        
+        function updateContributionTotal() {
+            const tons = parseFloat(document.getElementById('customAmount').value) || 0;
+            const price = 15.80; // Default price, should be dynamic based on project
+            const total = tons * price;
+            
+            document.getElementById('offsetAmount').textContent = `${tons} tons`;
+            document.getElementById('totalAmount').textContent = `$${total.toFixed(2)}`;
+        }
+        
+        function processContribution() {
+            const tons = parseFloat(document.getElementById('customAmount').value) || 0;
+            if (tons > 0) {
+                closeModal('contributeModal');
+                setTimeout(() => {
+                    alert(`Thank you for contributing ${tons} tons of CO₂ offset! Your contribution has been recorded on the blockchain.`);
+                }, 300);
+            }
+        }
+        
+        // Token Functions
+        function claimTokens() {
+            openModal('tokenClaimModal');
+        }
+        
+        function confirmClaim() {
+            closeModal('tokenClaimModal');
+            setTimeout(() => {
+                alert('Tokens claimed successfully! They have been added to your wallet.');
+            }, 300);
+        }
+        
+        // Info Modals
+        function openInfoModal(type) {
+            const modal = document.getElementById('infoModal');
+            const content = document.getElementById('infoModalContent');
+            
+            const infoData = {
+                immutable: {
+                    title: 'Immutable Records',
+                    content: `
+                        <p class="mb-4">Our blockchain technology ensures that every carbon offset transaction is permanently recorded and cannot be altered or deleted. This creates an unchangeable ledger of all environmental contributions.</p>
+                        <h4 class="font-bold mb-2">Key Benefits:</h4>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Permanent record of all transactions</li>
+                            <li>Protection against fraud and manipulation</li>
+                            <li>Complete audit trail for regulatory compliance</li>
+                            <li>Enhanced trust and transparency</li>
+                        </ul>
+                    `
+                },
+                verification: {
+                    title: 'Real-time Verification',
+                    content: `
+                        <p class="mb-4">Every carbon offset is verified in real-time through our blockchain network. This immediate verification ensures that your contributions are making a real environmental impact.</p>
+                        <h4 class="font-bold mb-2">How it works:</h4>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Smart contracts automatically verify each transaction</li>
+                            <li>Real-time monitoring of project implementation</li>
+                            <li>Instant confirmation of CO₂ reduction</li>
+                            <li>Continuous impact tracking and reporting</li>
+                        </ul>
+                    `
+                },
+                traceability: {
+                    title: 'Full Traceability',
+                    content: `
+                        <p class="mb-4">Follow your carbon offset from contribution to project implementation. Our blockchain provides complete transparency throughout the entire offset lifecycle.</p>
+                        <h4 class="font-bold mb-2">Traceability Features:</h4>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Track funds from wallet to project</li>
+                            <li>Monitor project progress in real-time</li>
+                            <li>Verify CO₂ reduction calculations</li>
+                            <li>Access detailed impact reports</li>
+                        </ul>
+                    `
+                }
+            };
+            
+            const info = infoData[type];
+            
+            content.innerHTML = `
+                <h2 class="text-2xl font-bold mb-4">${info.title}</h2>
+                ${info.content}
+            `;
+            
+            openModal('infoModal');
+        }
+        
+        // Additional Modal Functions
+        function openDemoModal() {
+            alert('Demo video would open here showing platform features');
+        }
+        
+        function openAllProjectsModal() {
+            alert('All projects page would open here with filtering and search options');
+        }
+        
+        function openTransactionModal() {
+            alert('Transaction explorer would open here showing all blockchain transactions');
+        }
+        
+        function openTransactionDetailModal(project) {
+            alert(`Detailed transaction view for ${project} project would open here`);
+        }
+        
+        function openFullHistoryModal() {
+            alert('Full transaction history with filtering and export options would open here');
+        }
+        
+        function openChartModal(type) {
+            alert(`Interactive ${type} chart with detailed analytics would open here`);
+        }
+        
+        function openMonthDetailModal(month, value) {
+            alert(`Detailed breakdown for ${month}: ${value.toLocaleString()} tons CO₂ offset`);
+        }
+        
+        function openProjectTypeModal(type, percentage) {
+            alert(`Detailed information about ${type} projects (${percentage}% of total impact)`);
+        }
+        
+        function openImpactModal(type) {
+            const impactData = {
+                co2: 'Detailed CO₂ impact analysis including equivalent metrics and future projections',
+                projects: 'Interactive map showing all project locations and their current status',
+                investment: 'Investment breakdown showing fund allocation and ROI metrics'
+            };
+            alert(impactData[type]);
+        }
+        
+        function openTokenModal() {
+            alert('Token dashboard with staking options, trading history, and utility features would open here');
+        }
+        
+        function openTokenBalanceModal() {
+            alert('Detailed token balance with transaction history and distribution breakdown');
+        }
+        
+        function openEarningsModal() {
+            alert('Earnings history showing token rewards from contributions and staking');
+        }
+        
+        function openTokenValueModal() {
+            alert('Token value chart with historical prices and market analysis');
+        }
+        
+        function openTokenUtilityModal() {
+            alert('Token utility guide showing all use cases and benefits');
+        }
+        
+        function openRewardInfoModal(type) {
+            const rewardInfo = {
+                earn: 'Detailed token earning mechanics including rates and bonus programs',
+                trade: 'Trading and staking guide with platform integrations and APY calculations',
+                support: 'Project funding portal showing how tokens support new initiatives'
+            };
+            alert(rewardInfo[type]);
+        }
+        
+        function openBonusModal() {
+            alert('Featured projects with 2x token rewards this month');
+        }
+        
+        function openPartnerModal(partner) {
+            alert(`Detailed information about Partner ${partner} and their sustainability initiatives`);
+        }
+        
+        function openTrustModal(type) {
+            const trustInfo = {
+                verified: 'Verification standards and certification process details',
+                secure: 'Security measures and blockchain technology explanation',
+                community: 'Community features and engagement opportunities'
+            };
+            alert(trustInfo[type]);
+        }
+        
+        function openSignupModal() {
+            alert('User registration form with wallet integration and profile setup');
+        }
+        
+        function openLearnMoreModal() {
+            alert('Comprehensive guide about carbon offsetting and blockchain technology');
+        }
+        
+        function openSocialModal(platform) {
+            alert(`Redirecting to our ${platform} page`);
+        }
+        
+        function openResourceModal(resource) {
+            alert(`${resource.charAt(0).toUpperCase() + resource.slice(1)} section would open here`);
+        }
+        
+        function openCompanyModal(section) {
+            alert(`${section.charAt(0).toUpperCase() + section.slice(1)} page would open here`);
+        }
+        
+        function openPrivacyModal() {
+            alert('Privacy Policy document would open here');
+        }
+        
+        function openTermsModal() {
+            alert('Terms of Service document would open here');
+        }
+        
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        }
+    </script>
+</body>
+</html>
